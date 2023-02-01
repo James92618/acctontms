@@ -14,10 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
+/* Remove vlan_decap table and two actoins:
+      remove_vlan_single_tagged;
+      remove_vlan_double_tagged;
+*/
+
  * Layer-2 processing
  */
-
+/* remove 
 header_type l2_metadata_t {
     fields {
         lkp_mac_sa : 48;
@@ -320,33 +324,3 @@ control process_egress_bd {
     apply(egress_bd_map);
 }
 
-/*****************************************************************************/
-/* Egress VLAN decap                                                         */
-/*****************************************************************************/
-action remove_vlan_single_tagged() {
-    modify_field(ethernet.etherType, vlan_tag_[0].etherType);
-    remove_header(vlan_tag_[0]);
-}
-
-action remove_vlan_double_tagged() {
-    modify_field(ethernet.etherType, vlan_tag_[1].etherType);
-    remove_header(vlan_tag_[0]);
-    remove_header(vlan_tag_[1]);
-}
-
-table vlan_decap {
-    reads {
-        vlan_tag_[0] : valid;
-        vlan_tag_[1] : valid;
-    }
-    actions {
-        nop;
-        remove_vlan_single_tagged;
-        remove_vlan_double_tagged;
-    }
-    size: VLAN_DECAP_TABLE_SIZE;
-}
-
-control process_vlan_decap {
-    apply(vlan_decap);
-}
